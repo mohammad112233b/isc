@@ -1,0 +1,163 @@
+(((( Rail ))))
+private void button1_Click(object sender, EventArgs e)
+ {
+ // Encryption Button
+ int key = Int32.Parse(textBox1.Text);
+ string message = textBox2.Text;
+ string cipher = Encrypt(message, key);
+ textBox3.Text = cipher;
+}
+ private void button2_Click(object sender, EventArgs e)
+ {
+ // Decryption Button
+ int key = Int32.Parse(textBox4.Text);
+ string cipher = textBox5.Text;
+ string message = Decrypt(cipher, key);
+ textBox6.Text = message;
+ }
+ public string Decrypt(string cipherText, int key)
+ {
+ cipherText = cipherText.ToLower();
+ int PTLength = (int)Math.Ceiling((double)cipherText.Length / key);
+ return Encrypt(cipherText, PTLength).ToLower();
+ }
+ public string Encrypt(string plainText, int key)
+ {
+ String.Join(plainText, plainText.Split(' '));
+ Console.WriteLine(plainText);
+ List<List<char>> table = new List<List<char>>();
+ int each = (int)Math.Ceiling((double)plainText.Length / key);
+ int counter = 0;
+ string CT = "";
+ for (int i = 0; i < key; i++)
+ {
+ table.Add(new List<char>());
+ }
+ for (int i = 0; i < each; i++)
+ {
+ for (int j = 0; j < key && j < plainText.Length; j++)
+ {
+ table[j].Add(plainText[counter]);
+counter++;
+ if (counter == plainText.Length) break;
+ }
+ }
+ for (int i = 0; i < table.Count; i++)
+ {
+ for (int j = 0; j < table[i].Count; j++)
+ {
+ CT += table[i][j];
+ }
+ }
+ return CT.ToLower();
+ }
+____________________________
+
+
+
+(((( des )))
+private void button1_Click(object sender, EventArgs e)
+ {
+ // Encryption Button
+ string key = textBox1.Text;
+ string message = textBox2.Text;
+string cipher = EncryptString(message, key);
+ textBox3.Text = cipher;
+ }
+ private void button2_Click(object sender, EventArgs e)
+ {
+ // Decryption Button
+ string key = textBox4.Text;
+ string cipher = textBox5.Text;
+ string message = DecryptString(cipher, key);
+ textBox6.Text = message;
+ }
+ public static string EncryptString(string str, string sKey)
+ {
+ DESCryptoServiceProvider des = new DESCryptoServiceProvider();
+ byte[] inputByteArray = Encoding.Default.GetBytes(str);
+ des.Key = ASCIIEncoding.ASCII.GetBytes(sKey);// key
+ byte[] IV = { 10, 20, 30, 40, 50, 60, 70, 80 };
+ des.IV = IV;
+ MemoryStream ms = new MemoryStream();
+ CryptoStream cs = new CryptoStream(ms, des.CreateEncryptor(),
+CryptoStreamMode.Write);
+ cs.Write(inputByteArray, 0, inputByteArray.Length);
+ cs.FlushFinalBlock();
+ var retB = Convert.ToBase64String(ms.ToArray());
+ return retB;
+ }
+ //Decrypt
+ public static string DecryptString(string pToDecrypt, string sKey)
+ {
+ DESCryptoServiceProvider des = new DESCryptoServiceProvider();
+ byte[] inputByteArray = Convert.FromBase64String(pToDecrypt);
+ des.Key = ASCIIEncoding.ASCII.GetBytes(sKey);
+ byte[] IV = { 10, 20, 30, 40, 50, 60, 70, 80 };
+ des.IV = IV;
+ MemoryStream ms = new MemoryStream();
+ CryptoStream cs = new CryptoStream(ms, des.CreateDecryptor(),
+CryptoStreamMode.Write);
+ cs.Write(inputByteArray, 0, inputByteArray.Length);
+ // If the two keys are not the same, this step may cause an exception
+ cs.FlushFinalBlock();
+ return System.Text.Encoding.Default.GetString(ms.ToArray());
+ }
+____________________________________
+((((aes))))
+private void button1_Click(object sender, EventArgs e)
+ {
+ // Encryption Button
+
+ int Blocksize = Int32.Parse(textBox2.Text);
+ int Keysize = Int32.Parse(textBox3.Text);
+ string Message = textBox1.Text;
+ string Key = textBox4.Text;
+ string IV = textBox5.Text;
+ string encMessage = Encrypt(Key, Blocksize, Keysize, Message, IV);
+ textBox6.Text = encMessage.ToString();
+
+ }
+ private void button2_Click(object sender, EventArgs e)
+ {
+ // Decryption Button
+ int Blocksize = Int32.Parse(textBox2.Text);
+ int Keysize = Int32.Parse(textBox3.Text);
+ string Cipher = textBox6.Text;
+ string Key = textBox4.Text;
+ string IV = textBox5.Text;
+ string decMessage = Decrypt(Key, Blocksize, Keysize, Cipher, IV);
+ textBox7.Text = decMessage.ToString();
+ }
+ public static string Encrypt(string Key, int Blocksize, int Keysize, string
+Message, string IV)
+ {
+ byte[] textbytes = ASCIIEncoding.ASCII.GetBytes(Message);
+ AesCryptoServiceProvider encdec = new AesCryptoServiceProvider();
+ encdec.BlockSize = Blocksize;
+ encdec.KeySize = Keysize;
+ encdec.Key = ASCIIEncoding.ASCII.GetBytes(Key);
+ encdec.IV = ASCIIEncoding.ASCII.GetBytes(IV);
+ encdec.Padding = PaddingMode.PKCS7;
+ encdec.Mode = CipherMode.CBC;
+ ICryptoTransform icrypt = encdec.CreateEncryptor(encdec.Key, encdec.IV);
+ byte[] enc = icrypt.TransformFinalBlock(textbytes, 0, textbytes.Length);
+ icrypt.Dispose();
+ return Convert.ToBase64String(enc);
+ }
+ public static string Decrypt(string Key, int Blocksize, int Keysize, string
+Cipher, string IV)
+ {
+ byte[] encbytes = Convert.FromBase64String(Cipher);
+ AesCryptoServiceProvider encdec = new AesCryptoServiceProvider();
+ encdec.BlockSize = Blocksize;
+ encdec.KeySize = Keysize;
+encdec.Key = ASCIIEncoding.ASCII.GetBytes(Key);
+ encdec.IV = ASCIIEncoding.ASCII.GetBytes(IV);
+ encdec.Padding = PaddingMode.PKCS7;
+ encdec.Mode = CipherMode.CBC;
+ ICryptoTransform icrypt = encdec.CreateDecryptor(encdec.Key, encdec.IV);
+ byte[] dec = icrypt.TransformFinalBlock(encbytes, 0, encbytes.Length);
+ icrypt.Dispose();
+ return ASCIIEncoding.ASCII.GetString(dec);
+ }
